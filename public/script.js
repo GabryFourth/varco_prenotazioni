@@ -203,6 +203,148 @@
   
       arrow.style.left = el.offsetLeft - el.parentNode.offsetLeft + 27 + 'px';
     };
+
+    // Funzione per trovare e aggiornare l'evento
+    function updateEvent(eventDateTimestamp, instagramTag) {
+
+        // Converte il timestamp in formato "YYYY-MM-DD" usando il fuso orario locale
+        var eventDate = new Date(eventDateTimestamp);
+        var eventDateString = eventDate.toLocaleDateString('en-CA'); // formato YYYY-MM-DD
+
+        // Trova l'evento corrispondente nella lista dei dati
+        var eventIndex = data.findIndex(event => event.date === eventDateString);
+
+        if (eventIndex !== -1) {
+            // Aggiorna l'evento localmente
+            data[eventIndex].instaTag = instagramTag;
+            data[eventIndex].calendar = 'Occupato';
+            data[eventIndex].color = 'orange';
+            console.log(`Evento del ${eventDateString} aggiornato localmente:`, data[eventIndex]);
+
+            fetch('http://localhost:3000/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(updatedData => {
+                console.log('File JSON aggiornato con successo', updatedData);
+            })
+            .catch(error => {
+                console.error('Errore nell\'aggiornamento del file JSON:', error);
+            });
+            
+            fetch('http://localhost:3000/sendMail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify([
+                    {
+                        "instaTag": instagramTag,
+                        "eventDate": eventDateString
+                    }
+                ]),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(updatedData => {
+                console.log('File JSON aggiornato con successo', updatedData);
+            })
+            .catch(error => {
+                console.error('Errore nell\'aggiornamento del file JSON:', error);
+            });
+
+        } else {
+            console.log(`Evento non trovato per la data: ${eventDateString}`);
+        }
+    }
+
+    // Function to open the overlay and show the event date
+    function openReservationOverlay(eventDateTimestamp) {
+        // Convert the timestamp to a Date object
+        var eventDate = new Date(eventDateTimestamp);
+
+        // Format the date to "12 December 2024"
+        var formattedDate = eventDate.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        // Create the overlay
+        var overlay = createElement('div', 'overlay');
+        var overlayContent = createElement('div', 'overlay-content');
+        var closeButton = createElement('button', 'close-overlay', 'Close');
+        var instagramInputLabel = createElement('label', '', 'Enter Instagram Tag:');
+        var instagramInput = createElement('input', 'instagram-tag-input');
+        var eventDateLabel = createElement('div', 'event-date', 'Event Date: ' + formattedDate);
+        var submitButton = createElement('button', 'submit-reservation', 'Reserve');
+
+        overlayContent.appendChild(eventDateLabel);
+        overlayContent.appendChild(instagramInputLabel);
+        overlayContent.appendChild(instagramInput);
+        overlayContent.appendChild(submitButton);
+        overlayContent.appendChild(closeButton);
+        overlay.appendChild(overlayContent);
+
+        // Append the overlay to the body
+        document.body.appendChild(overlay);
+
+        // Close the overlay when the close button is clicked
+        closeButton.addEventListener('click', function() {
+            document.body.removeChild(overlay);
+        });
+
+        // Handle the reservation submission
+        submitButton.addEventListener('click', function() {
+            var instagramTag = instagramInput.value.trim();
+
+            // Regular expression to validate Instagram tag
+            var instagramTagRegex = /^@([A-Za-z0-9_\.]+)$/;
+
+            if (instagramTag && instagramTagRegex.test(instagramTag)) {
+                // Close the current overlay after reservation
+                document.body.removeChild(overlay);
+
+                updateEvent(eventDateTimestamp, instagramTag);
+
+                // Create the confirmation overlay
+                var confirmationOverlay = createElement('div', 'overlay');
+                var confirmationOverlayContent = createElement('div', 'overlay-content');
+                var confirmationMessage = createElement('label', '', 'grazie per aver prenotato! la contatteremo subito per i dettagli. se vuoi annullare la prenotazione scrivi a @varcofficial');
+                var okButton = createElement('button', 'submit-reservation', 'Continua');
+
+                confirmationOverlayContent.appendChild(confirmationMessage);
+                confirmationOverlayContent.appendChild(okButton);
+                confirmationOverlay.appendChild(confirmationOverlayContent);
+
+                // Append the confirmation overlay to the body
+                document.body.appendChild(confirmationOverlay);
+
+                // Close the confirmation overlay when the OK button is clicked
+                okButton.addEventListener('click', function() {
+                    document.body.removeChild(confirmationOverlay);
+                    window.location.reload(true);
+                });
+
+
+            } else {
+                alert('Please enter a valid Instagram tag starting with "@" and containing only allowed characters');
+            }
+        });
+    }
   
     Calendar.prototype.renderEvents = function(events, ele) {
         var currentWrapper = ele.querySelector('.events');
@@ -210,14 +352,12 @@
       
         events.forEach(function(ev) {
           var div = createElement('div', 'event');
-          var square = createElement('div', 'event-category ' + ev.color);
-          var span = createElement('span', '', ev.eventName);
+          var span = createElement('span', '', 'prenotato da '+ev.instaTag);
           var button = createElement('button', 'reserve-class', 'Prenota');
       
           if (ev.calendar == "Prenotabile") {
             div.appendChild(button);
           } else {
-            div.appendChild(square);
             div.appendChild(span);
           }
       
@@ -244,46 +384,6 @@
           });
         } else {
           ele.appendChild(wrapper);
-        }
-      
-        // Function to open the overlay and show the event date
-        function openReservationOverlay(eventDate) {
-          // Create the overlay
-          var overlay = createElement('div', 'overlay');
-          var overlayContent = createElement('div', 'overlay-content');
-          var closeButton = createElement('button', 'close-overlay', 'Close');
-          var instagramInputLabel = createElement('label', '', 'Enter Instagram Tag:');
-          var instagramInput = createElement('input', 'instagram-tag-input');
-          var eventDateLabel = createElement('div', 'event-date', 'Event Date: ' + eventDate);
-          var submitButton = createElement('button', 'submit-reservation', 'Reserve');
-      
-          overlayContent.appendChild(eventDateLabel);
-          overlayContent.appendChild(instagramInputLabel);
-          overlayContent.appendChild(instagramInput);
-          overlayContent.appendChild(submitButton);
-          overlayContent.appendChild(closeButton);
-          overlay.appendChild(overlayContent);
-      
-          // Append the overlay to the body
-          document.body.appendChild(overlay);
-      
-          // Close the overlay when the close button is clicked
-          closeButton.addEventListener('click', function() {
-            document.body.removeChild(overlay);
-          });
-      
-          // Handle the reservation submission
-          submitButton.addEventListener('click', function() {
-            var instagramTag = instagramInput.value.trim();
-            if (instagramTag) {
-              // Handle the reservation logic (e.g., save the instagram tag, etc.)
-              console.log('Reservation made with Instagram tag: ' + instagramTag);
-              // Close the overlay after reservation
-              document.body.removeChild(overlay);
-            } else {
-              alert('Please enter a valid Instagram tag');
-            }
-          });
         }
       };      
   
@@ -325,15 +425,20 @@
     }
   }();
   
-  !function() {
-    var data = [
-      { eventName: 'Lunch Meeting w/ Mark', calendar: 'Work', color: 'orange', date: '2024-12-19' },
-      { eventName: 'Interview - Jr. Web Developer', calendar: 'Work', color: 'orange', date: '2024-12-20' },
-      { eventName: 'Demo New App to the Board', calendar: 'Work', color: 'orange', date: '2024-12-21' },
-      { eventName: 'Dinner w/ Marketing', calendar: 'Work', color: 'orange', date: '2024-12-22' },
-      { eventName: 'Prenotabile', calendar: 'Prenotabile', color: 'blue', date: '2024-12-23' }
-    ];
+  var data = [];
   
-    var calendar = new Calendar('#calendar', data);
+  !function() {
+    // Fetch the data from the server
+    fetch('http://localhost:3000/data')
+      .then(response => response.json())
+      .then(jsonData => {
+        data = jsonData; // Assign the fetched data to the variable
+  
+        // Now initialize the calendar with the fetched data
+        var calendar = new Calendar('#calendar', data);
+      })
+      .catch(error => {
+        console.error('Error loading data:', error);
+      });
   }();
   
