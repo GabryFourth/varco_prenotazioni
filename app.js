@@ -9,9 +9,12 @@ const port = 3000;
 // Set up the transporter for sending email
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: 'stefano.finotti.drive@gmail.com', // Replace with your email
-    pass: 'finotti.123OK!' // Replace with your email password (or use OAuth2 for better security)
+    user: 'gabriel140300@gmail.com', // Replace with your email
+    pass: 'xpdh qujm qqzw tehq' // Replace with your email password (or use OAuth2 for better security)
   }
 });
 
@@ -63,7 +66,7 @@ app.post('/sendMail', (req, res) => {
 
   // Email options
   const mailOptions = {
-    from: 'stefano.finotti.drive@gmail.com', // Replace with your email
+    from: 'gabriel140300@gmail.com', // Replace with your email
     to: 'varco.pov@gmail.com',
     subject: 'Prenotazione effettuata dal sito',
     text: `ecco i dati:\n\n${emailContent}`
