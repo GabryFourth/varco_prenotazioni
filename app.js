@@ -1,28 +1,45 @@
-// app.js (Node.js Backend)
-
+// Import necessary modules
 const express = require('express');
-const fs = require('fs');
+const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
+
 const app = express();
 const PORT = 3000;
 
-// Serve static files (e.g., HTML, CSS, JS)
-app.use(express.static('public'));
+// Middleware
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// API route to generate random numbers and save to a file
-app.get('/generate-random', (req, res) => {
-  const randomNumbers = Array.from({ length: 10 }, () => Math.floor(Math.random() * 100)).join(', ');
-  const filePath = path.join(__dirname, 'random.txt');
+// Simulated database
+let bookings = [
+    { date: '2024-12-15', priceOption: 'Option 1', contactInfo: { name: 'John Doe', email: 'john@example.com', phone: '123456789' } }
+];
 
-  fs.writeFile(filePath, randomNumbers, (err) => {
-    if (err) {
-      console.error('Error writing file:', err);
-      return res.status(500).send('Failed to save file.');
-    }
-    res.send('File saved successfully with random numbers!');
-  });
+// Endpoint to get bookings
+app.get('/api/bookings', (req, res) => {
+    res.json(bookings);
 });
 
+// Endpoint to create a booking
+app.post('/api/bookings', (req, res) => {
+    const { date, priceOption, contactInfo } = req.body;
+
+    // Check if date is already booked
+    if (bookings.some(booking => booking.date === date)) {
+        return res.status(400).json({ message: 'Date already booked' });
+    }
+
+    bookings.push({ date, priceOption, contactInfo });
+    res.status(201).json({ message: 'Booking successful' });
+});
+
+// Serve HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
