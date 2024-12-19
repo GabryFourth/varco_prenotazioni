@@ -25,7 +25,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Route to serve the index.html file
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.end('Hello World!');
+  //res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Serve il file JSON quando viene richiesto

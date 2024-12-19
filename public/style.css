@@ -1,15 +1,20 @@
 *, *:before, *:after {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
   }
-  
+
   body {
+   display: flex;
+   justify-content: center;
+   align-items: center;
    overflow: hidden;
-   font-family: 'HelveticaNeue-UltraLight', 'Helvetica Neue UltraLight', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-   font-weight: 100;
+   font-family: "Poppins", sans-serif;
+   font-weight: 400;
+   font-style: normal;
    color: rgba(255, 255, 255, 1);
    margin: 0;
    padding: 0;
-   background: #4A4A4A;
+   width: 100%;
+   height: 100%;
    -webkit-touch-callout: none;
    -webkit-user-select: none;
    -khtml-user-select: none;
@@ -18,6 +23,31 @@
    user-select: none;
   }
 
+  .background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('photo/background_photo.jpg'); /* Replace with your image URL */
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px) brightness(0.1); /* Blur and darken effect */
+    z-index: -1; /* Place it behind other content */
+  }
+  
+  .content {
+    position: relative;
+    max-width: 800px;
+    max-height: 90%;
+    margin: auto;
+    background: rgb(3, 0, 14);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  
   /* Overlay Background */
 .overlay {
   position: fixed;
@@ -112,7 +142,7 @@ label {
     background-color: rgba(156, 202, 235, 1);
     color: rgba(255, 255, 255, 1);
     font-size: 16px;
-    font-weight: 100;
+    font-weight: 200;
     text-align: center;
     cursor: pointer;
     border-radius: 4px;
@@ -133,16 +163,19 @@ label {
     -webkit-transform: translate3d(0, 0, 0);
     -moz-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
-    width: 420px;
     margin: 0 auto;
-    height: 570px;
     overflow: hidden;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    margin: 0 auto;
+    top: 50px;
   }
   
   .header {
     height: 50px;
-    width: 420px;
-    background: rgba(66, 66, 66, 1);
+    width: 100%;
+    background: rgb(2,0,10);
     text-align: center;
     position:relative;
     z-index: 100;
@@ -153,7 +186,7 @@ label {
     padding: 0;
     font-size: 20px;
     line-height: 50px;
-    font-weight: 100;
+    font-weight: 200;
     letter-spacing: 1px;
   }
   
@@ -169,13 +202,13 @@ label {
   
   .left {
     border-width: 7.5px 10px 7.5px 0;
-    border-color: transparent rgba(160, 159, 160, 1) transparent transparent;
+    border-color: transparent rgb(255, 255, 255) transparent transparent;
     left: 20px;
   }
   
   .right {
     border-width: 7.5px 0 7.5px 10px;
-    border-color: transparent transparent transparent rgba(160, 159, 160, 1);
+    border-color: transparent transparent transparent rgba(255, 255, 255);
     right: 20px;
   }
   
@@ -217,10 +250,6 @@ label {
     opacity: 1;
   }
   
-  .week {
-   background: #4A4A4A;
-  }
-  
   .day {
     display: inline-block;
     width: 60px;
@@ -228,7 +257,7 @@ label {
     text-align: center;
     vertical-align: top;
     cursor: pointer;
-    background: #4A4A4A;
+    background: #ffffff00;
     position: relative;
     z-index: 100;
   }
@@ -282,9 +311,9 @@ label {
   
   .details {
     position: relative;
-    width: 420px;
+    width: 100%;
     height: 75px;
-    background: rgba(164, 164, 164, 1);
+    background: rgb(2,0,10);
     margin-top: 5px;
     border-radius: 4px;
   }
@@ -310,11 +339,12 @@ label {
     height: 0px;
     border-style: solid;
     border-width: 0 5px 5px 5px;
-    border-color: transparent transparent rgba(164, 164, 164, 1) transparent;
+    border-color: transparent transparent rgb(2,0,10) transparent;
     transition: all 0.7s ease;
   }
   
   .events {
+    max-height: 150px; /* Set a max height with scrolling */
     height: 75px;
     padding: 7px 0;
     overflow-y: auto;
@@ -375,7 +405,7 @@ label {
     bottom: 0;
     width: 100%;
     height: 30px;
-    background: rgba(60, 60, 60, 1);
+    background: rgb(2,0,10);
     line-height: 30px;
   
   }
@@ -402,7 +432,23 @@ label {
   .entry.orange:after { background: rgba(247, 167, 0, 1); }
   .entry.green:after { background: rgba(153, 198, 109, 1); }
   .entry.yellow:after { background: rgba(249, 233, 0, 1); }
+
+  @media (max-width: 768px) {
+    #calendar {
+      padding: 0 10px;
+    }
   
+    .day {
+      font-size: 14px;
+      width: calc(100% / 7); /* Adjust width for responsive layout */
+      padding: 10px 5px;
+    }
+  
+    .day-number {
+      font-size: 18px;
+    }
+  }
+
   /* Animations are cool!  */
   @-webkit-keyframes moveFromTopFade {
     from { opacity: .3; height:0px; margin-top:0px; -webkit-transform: translateY(-100%); }
